@@ -1,0 +1,40 @@
+name: Publish DPDs
+
+on:
+  workflow_dispatch:
+    inputs:
+      deployEnv:
+        description: "The environment to deploy DPDs to"
+        required: true
+        default: dev
+        type: choice
+        options:
+          - development
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  publish:
+    name: Publish DPDs to ${{ inputs.deployEnv }} env
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.deployEnv }}
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+
+      - name: Validate DPDs
+        run: |
+          echo "Run team-owned DPD schema validation here"
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@e3dd6a429d7300a6a4c196c26e071d42e0343502
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_NUMBER }}:role/dpr-dpd-s3-publisher-activities-${{ inputs.deployEnv }}
+          aws-region: eu-west-2
+
+      - name: Upload DPDs
+        run: |
+          aws s3 sync definitions/ \
+            s3://dpr-dpd-definitions-${{ inputs.deployEnv }}/activities/
