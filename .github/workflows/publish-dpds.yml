@@ -21,12 +21,29 @@ jobs:
     runs-on: ubuntu-latest
     environment: ${{ inputs.deployEnv }}
 
+    env:
+      SCHEMA_LOCATION: "${{ github.workspace }}/schema.json"
+
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      # Validation
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "24.x"
 
-      - name: Validate DPDs
+      - name: SLSA
+        uses: ministryofjustice/devsecops-actions/sca/slsa@79b9f7c4bd0d3cb85d4f7a289a515a666d38322e
+
+      - run: npm ci --ignore-scripts
+
+      - name: Download schema
         run: |
-          echo "TODO: Need to run DPD schema validation here"
+          curl --fail --silent --show-error \
+            https://raw.githubusercontent.com/ministryofjustice/hmpps-digital-prison-reporting-data-product-definitions-schema/main/schema/data-product-definition-schema.json \
+            -o "$SCHEMA_LOCATION"
+
+      - name: Validate DPDs against schema
+        run: npm run validate
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@e3dd6a429d7300a6a4c196c26e071d42e0343502
