@@ -57,4 +57,4 @@ jobs:
       - name: Upload DPDs
         run: |
           aws s3 sync definitions/ \
-            s3://dpr-data-product-definitions-${{ inputs.deployEnv }}/location/
+            s3://dpr-data-product-definitions-${{ inputs.deployEnv }}/activities/
