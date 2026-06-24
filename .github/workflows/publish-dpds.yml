@@ -10,6 +10,9 @@ on:
         type: choice
         options:
           - development
+          - test
+          - preproduction
+          - production
 
 permissions:
   id-token: write
