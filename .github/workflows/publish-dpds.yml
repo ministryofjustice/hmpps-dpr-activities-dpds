@@ -42,7 +42,7 @@ jobs:
       - name: Download schema
         run: |
           curl --fail --silent --show-error \
-            https://raw.githubusercontent.com/ministryofjustice/hmpps-digital-prison-reporting-data-product-definitions-schema/main/schema/data-product-definition-schema.json \
+            https://raw.githubusercontent.com/ministryofjustice/hmpps-digital-prison-reporting-data-product-definitions-schema/main/schema/1.0.0/data-product-definition-schema.json \
             -o "$SCHEMA_LOCATION"
 
       - name: Validate DPDs against schema
