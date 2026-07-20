@@ -64,13 +64,13 @@ jobs:
             if aws s3 rm "s3://${BUCKET}/${KEY}"; then
               echo "Deleted ${KEY}"
             else
-              echo "::error::Failed to delete ${KEY}"
+              echo "ERROR::Failed to delete ${KEY}"
               failed=1
             fi
           done
 
           if [[ $failed -eq 1 ]]; then
-            echo "::error::One or more deletions failed."
+            echo "ERROR::One or more deletions failed."
             exit 1
           fi
 
