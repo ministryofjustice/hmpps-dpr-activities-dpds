@@ -44,7 +44,7 @@ jobs:
           set -uo pipefail
 
           BUCKET="dpr-data-product-definitions-${{ inputs.deployEnv }}"
-          PREFIX="random"
+          PREFIX="activities"
 
           IFS=',' read -ra FILES <<< "${{ inputs.fileNames }}"
 
