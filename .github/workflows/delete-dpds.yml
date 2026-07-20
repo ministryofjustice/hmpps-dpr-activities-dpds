@@ -1,0 +1,77 @@
+name: Delete DPDs
+
+on:
+  workflow_dispatch:
+    inputs:
+      deployEnv:
+        description: "The environment to delete DPDs from"
+        required: true
+        default: development
+        type: choice
+        options:
+          - development
+          - test
+          - preproduction
+          - production
+
+      fileNames:
+        description: "Comma-separated DPD file names (e.g. fileNameA.json,fileNameB.json)"
+        required: true
+        type: string
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  delete:
+    name: Delete DPDs from ${{ inputs.deployEnv }}
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.deployEnv }}
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@e3dd6a429d7300a6a4c196c26e071d42e0343502
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_NUMBER }}:role/dpr-dpd-s3-publisher-activities-${{ inputs.deployEnv }}
+          aws-region: eu-west-2
+
+      - name: Delete DPDs
+        shell: bash
+        run: |
+          set -uo pipefail
+
+          BUCKET="dpr-data-product-definitions-${{ inputs.deployEnv }}"
+          PREFIX="activities"
+
+          IFS=',' read -ra FILES <<< "${{ inputs.fileNames }}"
+
+          failed=0
+
+          for file in "${FILES[@]}"; do
+            file="$(echo "$file" | xargs)" # Trim whitespace
+
+            if [[ -z "$file" ]]; then
+              continue
+            fi
+
+            KEY="${PREFIX}/${file}"
+
+            echo "Deleting s3://${BUCKET}/${KEY}"
+
+            if aws s3 rm "s3://${BUCKET}/${KEY}"; then
+              echo "Deleted ${KEY}"
+            else
+              echo "::error::Failed to delete ${KEY}"
+              failed=1
+            fi
+          done
+
+          if [[ $failed -eq 1 ]]; then
+            echo "::error::One or more deletions failed."
+            exit 1
+          fi
+
+          echo "All requested DPD files deleted successfully."

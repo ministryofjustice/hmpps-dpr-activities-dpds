@@ -6,7 +6,7 @@ on:
       deployEnv:
         description: "The environment to deploy DPDs to"
         required: true
-        default: dev
+        default: development
         type: choice
         options:
           - development
